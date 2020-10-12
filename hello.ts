@@ -1,4 +1,62 @@
 /*-------------------------------------------------------- 一、基本类型 --------------------------------------------------------*/
+let isDone: boolean = false // 布尔值
+let decLiteran: number = 10 // 数字
+let namestring: string = 'bob' // 字符串
+let nametemplate: string = `bob, age: ${decLiteran}` // 模板字符串
+let list: number[] = [1, 2, 3] // 数组1
+let list2: Array<number> = [1, 2, 3] // 数组2
+
+// 元组Tuple，表示一个已知元素数量和类型的数组
+let xxxx: [string, number]
+xxxx = ['hello', 10] // 元组Tuple，若访问一个越界元素：x[3] = 'world' => OK，x[3] = true => Error
+
+// 枚举
+enum Color {Red = 1, Green = 2, Blue}
+let c: Color = Color.Green // 打印 c => 2
+let d: string = Color[2] // 根据枚举的值得到它的名字，打印 d => 'Green'
+
+// 任意类型any（Object类型的变量只允许你给它赋任意值，但是不能够在它上面调用任意的方法，即使他真的有这些方法）
+let notSure: any = 4
+
+// void类型与any相反，表示没有任何类型
+function warnUser(): void { // 当一个函数没有返回值时，通常会见到其返回值类型是void
+  console.log("This is my warning message")
+}
+let unusable: void = undefined // 生命一个void类型的变量没什么大用，因为只能为它赋予undefined和null
+
+// Null和Undefined
+// 两者各自有自己的类型分别叫null和undefined，它们本身的类型用处不是很大
+let u: undefined = undefined
+let n: null = null
+// 默认情况下null和undefined是所有类型的子类型。可以把他俩赋值给number类型的变量
+// 如果指定了--strictNullChecks标记，null和undefined只能赋值给void和它们各自
+
+// Never
+// 表示那些永远不存在的值类型。如：抛出异常/没有返回值的函数表达式/箭头函数表达式的返回值类型
+// 变量也可能是never类型，当它们被永不为真的类型保护所约束时
+// never是任何类型的子类型，也可以赋值给任何类型；
+// 然而，没有类型是never的子类型或可以赋值给never类型（除never本身外）。即使any也不可以赋值给never
+function error (msg: string): never { // 返回never的函数必须存在无法到达的终点
+  throw new Error(msg)
+}
+function fail (): never { // 推断的返回值类型为never
+  return error('Something failed')
+}
+function infiniteLoop(): never { // 返回never的函数必须存在无法到达的终点
+  while (true) {}
+}
+
+// Object
+// 表示非原始类型，除number,string,boolean,symbol,null,undefined之外的类型
+// 使用object类型，可更好的表示像Object.create这样的API
+declare function create(o: object | null): void
+create({prop: 0}) // OK
+create(null) // OK  错误例： create(42) // Error
+
+// 类型断言
+let someValue: any = "this is a string"
+let strLength: number = (<string>someValue).length
+let strLength2: number = (someValue as string).length
 
 /*-------------------------------------------------------- 二、变量声明 --------------------------------------------------------*/
 
