@@ -3,8 +3,9 @@ let isDone: boolean = false // 布尔值
 let decLiteran: number = 10 // 数字
 let namestring: string = 'bob' // 字符串
 let nametemplate: string = `bob, age: ${decLiteran}` // 模板字符串
-let list: number[] = [1, 2, 3] // 数组1
-let list2: Array<number> = [1, 2, 3] // 数组2
+let list: number[] = [1, 2, 3] // 数组
+let list2: Array<number> = [1, 2, 3] // 数组泛型
+let list3: (number | string)[] = [1, '2', 3] // 联合类型数组 let arr: number[] | string []
 
 // 元组Tuple，表示一个已知元素数量和类型的数组
 let xxxx: [string, number]
@@ -143,7 +144,81 @@ let myReadonlyStringArray: ReadonlyStringArray = ['Alici', 'Bob'] // myReadonlyS
 // 9、继承接口
 // 10、混合类型
 // 11、接口继承类
+
 /*-------------------------------------------------------- 四、类 --------------------------------------------------------*/
+// 1、es6中：使用class定义类，使用constuctor定义构造函数，通过new生成实例的时候，会自动调用构造函数
+class Animal {
+  public name
+  constructor (name) {
+    this.name = name
+  }
+  sayHi () {
+    return `My name is ${this.name}`
+  }
+}
+let animal = new Animal('Jack')
+console.log(animal.sayHi()); // My name is Jack
+// 2、es6中：使用extends关键字实现继承，子类中使用super关键字来调用父类的构造函数和方法
+class Cat extends Animal {
+  constructor (name) {
+    super(name) // 调用父类的 constructor(name)
+    console.log(this.name)
+  }
+  sayHi () {
+    return `Meow, ${super.sayHi()}` // 调用父类的sayHi()
+  }
+}
+let cat = new Cat('Tom')
+console.log(cat.sayHi()); // Meow, My name is Tom
+// 3、es6中：存取器，使用getter和setter可以改变属性的赋值和读取行为
+class Animal2 {
+  constructor (name) { this.name = name }
+  get name() { return 'Jack' }
+  set name(value) { console.log('setter: ' + value) }
+}
+let animal2 = new Animal2('Kitty') // setter: Kitty
+animal2.name = 'Tom' // setter: Tom
+// 4、es6中：静态方法
+// 使用static修饰符修饰的方法称为静态方法，不需要实例化，而是直接通过类来调用
+class Animal3 {
+  static isAnimal3 (a) { return a instanceof Animal3 }
+}
+// Animal.isAnimal(a); // true
+
+// ts中：三种访问修饰符，public,private,protected
+// private 不允许被访问，protected 只有子类可以访问
+// 当构造函数修饰为private，该类不允许被继承或者实例化；修饰为protected时，该类只允许被继承
+// readonly 只读属性，只允许出现在属性声明或索引签名或构造函数中
+
+// abstract 用于定义抽象类和其中的抽象方法
+// 抽象类不允许被实例化；抽象类中的抽象方法必须被子类实现
+abstract class  Animal4 {
+  name: string
+  constructor(name: string) {
+    this.name = name    
+  }
+  public abstract sayHi()
+}
+class Cat4 extends Animal4 {
+  public sayHi() {
+    console.log(`Meow, My name is ${this.name}`);
+  }
+}
+
+// 类接口实现
+// 一般，一个类只能继承自另一个类，有时候，不同类可以有写共有的特性，可以把特性提取成接口，应implements关键字来实现
+// 门类和车类，都有报警器功能
+interface Alarm { alert(): void }
+class Door {}
+class SecurityDoor extends Door implements Alarm { alert() { console.log('SecurityDoor alert') } }
+class Car implements Alarm { alert() { console.log('Car alert') } }
+// 一个类可以实现多个接口 class Car implements Alarm, Light {}
+
+// 接口继承接口
+interface LighttableAlarm extends Alarm { lightOn(): void; lightOff(): void;}
+
+// 接口继承类
+
 
 /*-------------------------------------------------------- 五、函数 --------------------------------------------------------*/
 // js 2种发方式定义函数
@@ -227,6 +302,28 @@ function loggingIdentity3<T extends Lengthwise>(arg: T): T {
   return arg
 }
 // 在泛型约束中使用类型参数
+// 泛型T不一定包含属性length，可以对泛型进行约束，只允许这个函数传入那些包含length属性的变量
+interface Lengthwise { length: number }
+function loggingIdentity4<T extends Lengthwise>(arg: T): T {
+  console.log(arg.length)
+  return arg
+}
+// 多个类型参数之间也可以互相约束
+// 要求T继承U，保证了U上不会出现T中不存在的字段
+function copyFields<T extends U, U>(target: T, source: U): T {
+  for (let id in source) {
+    target[id] = (<T>source)[id]
+  }
+  return target
+}
+let copyFieldsObj = {a: 1, b: 2, c: 3, d: 4}
+copyFields(copyFieldsObj, {b: 10, d: 20})
+
+// 泛型接口
+interface CreateArrayFunc<T> {
+  (length: number, value: T):Array<T>
+}
+
 // 在泛型里使用类类型
 
 /*-------------------------------------------------------- 七、枚举 --------------------------------------------------------*/
@@ -249,6 +346,7 @@ function extend<T, U>(first: T, second: U): T & U{
   }
   return result
 }
+
 // 2、联合类型
 function padLeft(value: string, padding: string | number) {
   if (typeof padding === 'number') {
@@ -259,7 +357,7 @@ function padLeft(value: string, padding: string | number) {
   }
   throw new Error(`Expected string or number, got ${padding}`)
 }
-// 类型保护与区分类型
+
 // 3、类型别名
 // 给以i个类型起个新名字。类型别名有时和接口很像，但可作用于原始值，联合类型，元组以及其它任何需要手写的类型
 type typeName = string
@@ -281,6 +379,66 @@ type Tree<T> = {
 // 类型别名与交叉类型一起使用
 type LinkedList<T> = T & { next: LinkedList<T> }
 // 类型别名不能出现在声明右侧的任何地方 type Yikes = Array<Yikes> => Error
+
+// 4、类型保护与区分类型
+// 类型保护是可执行运行时检查的一种表达式，用于确保该类型在一定的范围内
+// 尝试检测属性、方法或原型，以确定如何处理值
+// 4.1、in关键字
+interface Admin {
+  name: string
+  privileges: string[]
+}
+interface Employee {
+  name: string
+  startDate: Date
+}
+type UnknowEmployee = Employee | Admin
+function pritEmployeeInformation(emp: UnknowEmployee) {
+  console.log("Name: "+emp.name)
+  if ("privileges" in emp) {
+    console.log('Privileges：' + emp.privileges)
+  }
+  if ("startDate" in emp) {
+    console.log('Start Date' + emp.startDate)
+  }
+}
+
+// 4.2、typeof关键字
+// typeof类型保护只支两种形式：typeof v === "typename" 和 typeof v!== typename，
+// "typename" 必须是 "number",'string','boolean','symbol'
+// 但是ts不会阻止你与其他字符串比较，语言不会把那些表达式试别为类型保护
+function padLeft2(value: string, padding: string | number) {
+  if (typeof padding === "number") {
+    return Array(padding + 1).join(" ") + value
+  }
+  if (typeof padding === "string") {
+    return padding + value
+  }
+  throw new Error(`Expected string or number, got '${padding}'.`)
+}
+
+// 4.3、instanceof关键字
+interface Padder {
+  getPaddingString(): string
+}
+class SpaceRepeatingPadder implements Padder {
+  constructor(private numSpaces: number) {}
+  getPaddingString() {
+    return Array(this.numSpaces + 1).join(" ")
+  }
+}
+class StringPadder implements Padder {
+  constructor(private value: string) {}
+  getPaddingString() {
+    return this.value;
+  }
+}
+let padder: Padder = new SpaceRepeatingPadder(6)
+if (padder instanceof SpaceRepeatingPadder) {} // padder的类型收窄为'SpaceRepeatingPadder'
+
+// 4.4、自定义类型保护的类型谓词
+function isNumber(x: any): x is number { return typeof x === "number" }
+function isString(x: any): x is string { return typeof x === "string" }
 
 /*-------------------------------------------------------- 十一、Symbols --------------------------------------------------------*/
 
@@ -379,3 +537,89 @@ namespace Validation {
 /*-------------------------------------------------------- 二十一、三斜线指令 --------------------------------------------------------*/
 
 /*-------------------------------------------------------- 二十二、 JavaScript文件类型检查 --------------------------------------------------------*/
+
+// 如果你是在开发一个包，模块，允许别人进行扩展就用 interface，如果需要定义基础数据类型或者需要类型运算，使用 type
+
+// 如果需要一个对象类型，但对对象的属性没有要求，使用 object。{} 和 Object 表示的范围太泛尽量不要使用
+
+// 默认情况下enum会被编译成javascript对象，并且可以通过value反向查找
+// cosnt enum 默认情况下不会生成 Javascript 对象而是把使用到的代码直接输出 value，不支持 value 反向查找
+
+// ts两种模式：脚本模式(Script)一个文件对应一个html的script标签；模块模式（Module）下一个文件对应一个Ts模块
+// 两种模式区分逻辑：文件内部包不包含import或者export关键字
+// 脚本模式下，所有变量定义，类型声明都是全局的，多个文件定义同一个变量会报错，同名interface会合并
+// 模块模式下，所有变量定义，类型声明都是模块内有效的
+// 脚本模式下，直接declare var GlobalStore即可为全局对象编写声明
+declare var GlobalStore: { foo: string }
+// 模块模式下，全局对象编写声明需要declare global
+declare global { var GlobalStore: {foo: string} }
+
+// 集合运算
+type Type1 = 'a' | 'b'
+type Type2 = 'b' | 'c'
+type Type3 = Type1 & Type2 // 'b'
+type Type4 = Type1 | Type2 // 'a','b','c'
+
+// 索引签名可以用来定义对象内的属性、值的类型
+// 定义一个React组件，允许Props 可以传任意key为string，value为number的props
+interface Props { [key: string]: number } // <Component count={1} /> // OK
+
+// 类型健如，允许ts像对象取属性值一样使用类型
+type User = {
+  userId: string
+  friendList: {
+    firstName: string
+    lastName: string
+  }[]
+}
+type UserIdType = User['userId'] // string
+type FriendList = User['friendList'] // { firstName: string; lastName: string; }[]
+type Friend = FriendList[number] // { firstName: string; lastName: string; }
+
+// typeof value
+// keyof 获取一个对象的所有key类型
+type Userkeys = keyof User // 'userId' , 'friendList'
+// 如果要获取枚举的key类型，需要先把它当成值，用typeof再用keyof
+enum ActiveType { Active, Inactive}
+type keyOfType = keyof typeof ActiveType // "Active" | "Inactive"
+
+// extends
+// 在interface中表示类型扩展
+interface A { a: string }
+interface B extends A { b: string } // { a: string, b: string }
+// 在条件类型语句中表示布尔运算
+type Bar<T> = T extends string ? 'string' : never
+type C = Bar<number> // never
+type D = Bar<string> // string
+type E = Bar<'foo'> // string
+// 在泛型中起到限制的作用
+type Foo<T extends object> = T
+// type F = Foo<number> // Error 类型“number”不满足约束“object”。
+// type G = Foo<string> // Error 类型“string”不满足约束“object”。
+type H = Foo<{}> // OK
+// 在class中表示继承
+class I {}
+class J extends I {}
+// 使 A extends B 在布尔运算或泛型限制中成立的条件是 A 是 B 的子集，也就是 A 需要比 B 更具体，至少是跟 B 一样
+type K = '1' extends '1' | '2' ? 'true' : 'false' // true
+type L = '1' | '2' extends '1' ? 'true' : 'false' // false
+type M = { a: 1 } extends { a: 1, b: 1 } ? 'true' : 'false' // false
+type N = { a: 1, b: 1 } extends { a: 1 } ? 'true' : 'false' // true
+
+// is
+// 在ts用作用户类型防护，可用来告诉ts如何辨别类型
+interface Fish { swim: () => {} }
+// pet is Fish ，为true时，pet是用户验证过的Fish类型，可以安全地把它认定为Fish
+// 为false时，pet不是Fish
+function isFish(pet: any): pet is Fish {
+  return (pet as Fish).swim !== undefined
+}
+let pet = {} as unknown
+if ( isFish(pet) ) { pet.swim() } // OK
+// else { pet.swim() } // Error 类型“unknown”上不存在属性“swim”
+
+// 泛型
+declare function filter<T> (
+  array: T[],
+  fn: (item: unknown) => boolean
+): T[]
